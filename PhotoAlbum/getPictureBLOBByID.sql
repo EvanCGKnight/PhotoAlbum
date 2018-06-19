@@ -1,0 +1,10 @@
+DELIMITER//
+DROP PROCEDURE IF EXISTS getPictureBLOBByID //
+
+CREATE PROCEDURE getPicturesByID(IN ID INT)
+BEGIN
+   SELECT image
+      FROM pictures
+      WHERE pictureID = ID;
+END  //
+DELIMITER;

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<!--
+  Sample page that uses the ng-repeat directive to process a array/list
+  of JSON objects present in the variable "schools". Some Bootstrap has been applied.
+-->
+<html ng-app>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular.min.js"></script>
+  <!-- <script src="js/list.js"></script> -->
+  <!--<title>AngularJS and static json of Pictures</title>-->
+  <title>Photo Album</title>
+</head>
+<body style="background: #B5D8F0">
+  <div class="container">
+
+    <div class="col-sm-7 col-sm-offset-2" ng-app="photoAlbum"  >
+      <h1>Welcome to Photo Album!</h1>
+      <!-- OUR FORM -->
+        <div ng-controller = "signInController" ng-init="getUsername(user)" >
+        <form id="signInForm">
+            <!-- NAME -->
+            <div id="username-group" class="form-group" ng-show="!hide">
+                <label for="usernameText">Username</label>
+                <input type="text" class="form-control" id="usernameText" name="usernameText" placeholder="FCS Login id" required ng-model="user.username">
+                <!-- errors will go here -->
+            </div>
+
+            <!-- PASSWORD -->
+            <div id="password-group" class="form-group" ng-show="!hide">
+                <label for="password">Password {{$rootScope.signedIn}}</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="FCS password" required ng-model="user.password">
+                <!-- errors will go here -->
+            </div>
+
+            <button type="button" class="btn btn-success"  ng-show="!hide" ng-click="signIn(user)">SignIn<span class="fa fa-arrow-right" ></span></button>
+            <button type="button" class="btn btn-success" ng-show="hide" ng-click="signOut(user)">SignOut<span class="fa fa-arrow-right" ></span></button>
+            <p>{{message}}</p>
+        </form>
+      </div>
+
+        <div ng-controller = "pictureController" ng-show="hide" >
+          <!-- <div id="searchPicture-group" class="form-group">
+            <input type="text" id="picSearchusernameText" name="picSearchusernameText" required ng-model="pic.picSearchusernameText" placeholder="Search pictures by user">
+            <button type="button" class="btn btn-success" ng-click="">Search<span class="fa fa-arrow-right"></span></button>
+          </div> -->
+          <div id="addPicture-group" class="form-group">
+            <input type="text" id="pictureTitleText" name="pictureTitleText" required ng-model="pic.pictureTitleText" placeholder="Picture Title">
+            <input type="text" id="pictureDescriptionText" name="pictureDescriptionText" required ng-model="pic.pictureDescriptionText" placeholder ="Picture Description">
+            <input type="file" id="uploadImageForm {{picture.pictureID}}" style="width: 190px; display: inline-block; float: right;"  name="file"/> <!-- onchange="angular.element(this).scope()uploadImage(this.files)"/> -->
+            <button type="button" class="btn btn-success" ng-click="postPicture(pic)">Add Picture<span class="fa fa-arrow-right"></span></button>
+            <!--<form action="demo_form.asp">
+              <input type="file" name="pic" accept="image/*">
+              <input type="submit">
+            </form> -->
+          </div>
+
+          <h1><span class="label label-success">List of pictures </span></h1>
+          <ul class="list-group">
+            <li class="list-group-item-warning" ng-repeat = "picture in pictures">
+<!--              <button id="editImageButton {{picture.pictureID}}" ng-click="editImage(picture)">Image File</button> -->
+              <button id="editPictureButton {{picture.pictureID}}" class="btn btn-primary" ng-click="editPicture(picture)">Edit</button>
+              <button id="deletePictureButton {{picture.pictureID}}" class="btn btn-primary"  ng-click="deletePicture(picture)">Delete</button>
+              <button id="submitImageButton {{picture.pictureID}}" style="float: right;"class="btn btn-primary"  ng-click="uploadImage(picture)">Upload Image</button>
+              <input type="file" id="uploadImageForm {{picture.pictureID}}" style="width: 190px; display: inline-block; float: right;"  name="file"/> <!-- onchange="angular.element(this).scope()uploadImage(this.files)"/> -->
+              <br></br>
+              <span class="label label-success">{{picture.title}} </span>
+              <br></br>
+              <img ng-init="getImage(picture)"data-ng-src="data:image/png;base64,{{picture.image}}" data-err-src="images/png/avatar.png" style="width:300px; height:300px"/>
+              <br></br>
+              <span class="label label-success">{{picture.username}} </span>
+              <span class="label label-success">{{picture.pictureID}} </span>
+              <span class="label label-success">{{picture.description}} </span>
+              <hr></hr>
+            </li>
+          </ul>
+        </div>
+    </div>
+
+    <script>
+
+    function pictureController($rootScope, $scope, $http) {
+      var url = "https://info3103.cs.unb.ca:57723/pictures";
+      //add name to this later
+      $http.get(url).then( function(response) {
+        $rootScope.pictures = response.data.pictures;
+      });
+
+      $scope.postPicture = function(pic){
+        pictureData = JSON.stringify({"Title": pic.pictureTitleText, "Description": pic.pictureDescriptionText})
+        $http.post('https://info3103.cs.unb.ca:57723/pictures', pictureData).then(function(response){
+          if (response.status == 201){
+            //make it so pictureController.message actually gets used later
+              $scope.message = 'Picture succesfully created';
+            }
+        });
+        $http.get(url).then( function(response) {
+          $rootScope.pictures = response.data.pictures;
+        });
+      }
+
+      $scope.deletePicture = function(picture){
+        picID = picture.pictureID;
+        $http.delete('https://info3103.cs.unb.ca:57723/pictures/' + picID).then(function(response){
+          if (response.status == 200){
+            $scope.message = 'Picture succesfully deleted';
+            //$rootScope.pictures.splice(rootScope.pictures)
+            $http.get(url).then( function(response) {
+              $rootScope.pictures = response.data.pictures;
+            });
+          }
+        });
+      }
+
+      $scope.editPicture = function(picture){
+        var num         = picture.pictureID;
+        var title       = prompt("Please enter the title", "Title");
+        var description = prompt("Please enter the description", "description");
+        if(title != null && description != null){
+          code = JSON.stringify({"Title": title, "Description": description});
+          $http.put('https://info3103.cs.unb.ca:57723/pictures/' + num, code).then(function(data){
+            if(data.status == 202){
+              $http.get('https://info3103.cs.unb.ca:57723/pictures').then(function(data){
+                $scope.pictures = data.data.pictures;
+              });
+            }
+          });
+        }
+      }
+
+      $scope.getPicture = function(picture){
+        pictureID = picture.pictureID;
+        $http.get('https://info3103.cs.unb.ca:57723/pictures/' + pictureID).then(function(data){
+          $scope.pictures.indexOf(picture) = data.data;
+        });
+      }
+
+      $scope.getImage = function(picture){
+
+        pictureID = picture.pictureID;
+        $http.get('https://info3103.cs.unb.ca:57723/pictures/' + pictureID + '/image').then(function(data){
+          picture.image= data.data;
+        });
+      }
+
+      $scope.uploadImage = function(picture) {
+        debugger;
+          element = document.getElementById('uploadImageForm ' + picture.pictureID)
+          file = element.files;
+          var formData = new FormData();
+          //Take the first selected file
+          formData.append("file", file[0]);
+
+          $http.put('https://info3103.cs.unb.ca:57723/pictures/' + picture.pictureID + '/image', formData.get('file'), {
+              withCredentials: true,
+              headers: {'Content-Type': undefined },
+              transformRequest: angular.identity
+          });
+          $scope.getImage(picture);
+
+      };
+    }
+
+
+    function signInController($scope, $rootScope, $http) {
+      $scope.message = 'Please signin with your UNB FCS credentials';
+      $rootScope.hide = false;
+
+      $scope.getUsername = function(user){
+        $http.get('https://info3103.cs.unb.ca:57723/signIn').then(function(data){
+          if (data.status == 200){
+            $rootScope.username = data.data.username;
+            $rootScope.signedIn = true;
+            $scope.message = 'Currently signed in as ' + data.data.username;
+            $rootScope.hide = true;
+          }
+        });
+      }
+
+      $scope.signIn = function (user){
+
+        credentials = JSON.stringify({"username": user.username, "password": user.password});
+	       // Submit the credentials
+         $http.post('https://info3103.cs.unb.ca:57723/signIn', credentials ).then(function(data) {
+           // Success here means the transmission was successful - not necessarily the login.
+           // The data.status determines login success
+             $scope.message = 'Please enter in valid UNB credentials';
+           if((data.status == 201) || (data.status == 200) ) {
+             if (data.status == 200){
+               $scope.message = 'You are already signed in as ' + $rootScope.username;
+               $rootScope.hide = true;
+             }
+             if (data.status == 201){
+               debugger;
+               $rootScope.username = data.data.username;
+               $rootScope.hide = true;
+               $rootScope.signedIn = true;
+               $scope.message = 'Succesfully signed in as ' + $rootScope.username;
+               $http.get('https://info3103.cs.unb.ca:57723/pictures').then( function(response){
+                 $rootScope.pictures = response.data.pictures;
+               });
+             }
+             // You're in!
+             // But does the session carry? Let's try some other endpoint that requires a login
+
+           }
+         });
+       }
+       $scope.signOut = function (user){
+          $http.delete('https://info3103.cs.unb.ca:57723/signIn').then(function(data) {
+            if(data.status == 200) {
+              $scope.message = 'You have succesfully signed out'
+              delete $rootScope.pictures;
+              $rootScope.signedIn = false;
+              $rootScope.hide = false;
+              /*$http.get('https://info3103.cs.unb.ca:57723/pictures').then( function(response){
+                $rootScope.pictures = response.pictures;
+              }); */
+            }
+          });
+        }
+     }
+
+  </script>
+  </div>
+
+</body>
+</html>
