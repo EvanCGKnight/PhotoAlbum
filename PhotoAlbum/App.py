@@ -217,7 +217,7 @@ class PictureResource(Resource):
 			responseCode = 403
 			return make_response(jsonify(response), responseCode)
 
-	#Deltes a specific picture
+	#Deletes a specific picture
 	def delete(self, pictureId):
 		if 'username' in session:
 			try:
