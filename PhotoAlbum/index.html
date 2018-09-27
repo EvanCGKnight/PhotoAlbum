@@ -108,7 +108,6 @@
         $http.delete('https://info3103.cs.unb.ca:57723/pictures/' + picID).then(function(response){
           if (response.status == 200){
             $scope.message = 'Picture succesfully deleted';
-            //$rootScope.pictures.splice(rootScope.pictures)
             $http.get(url).then( function(response) {
               $rootScope.pictures = response.data.pictures;
             });
@@ -204,8 +203,6 @@
                  $rootScope.pictures = response.data.pictures;
                });
              }
-             // You're in!
-             // But does the session carry? Let's try some other endpoint that requires a login
 
            }
          });
@@ -217,9 +214,6 @@
               delete $rootScope.pictures;
               $rootScope.signedIn = false;
               $rootScope.hide = false;
-              /*$http.get('https://info3103.cs.unb.ca:57723/pictures').then( function(response){
-                $rootScope.pictures = response.pictures;
-              }); */
             }
           });
         }
